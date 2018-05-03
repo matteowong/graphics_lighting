@@ -8,8 +8,19 @@
 
 //lighting functions
 color get_lighting( double *normal, double *view, color alight, double light[2][3], double *areflect, double *dreflect, double *sreflect) {
-  color i=calculate_ambient(alight, areflect);
-  printf("red: %d, green: %d, blue: %d\n",i.red,i.green,i.blue);
+  normalize(normal);
+  normalize(light[LOCATION]);
+  normalize(view);
+  
+  color ambient=calculate_ambient(alight, areflect);
+  color diffuse=calculate_diffuse(light, dreflect, normal);
+  color specular=calculate_specular(light, sreflect, view, normal);
+  //printf("red: %d, green: %d, blue: %d\n",i.red,i.green,i.blue);
+  color i;
+  i.red=ambient.red+diffuse.red+specular.red;
+  i.green=ambient.green+diffuse.green+specular.green;
+  i.blue=ambient.blue+diffuse.blue+specular.blue;
+  limit_color(&i);
   return i;
 }
 
@@ -25,12 +36,39 @@ color calculate_ambient(color alight, double *areflect ) {
 
 color calculate_diffuse(double light[2][3], double *dreflect, double *normal ) {
   color d;
+  //P*Kd*(N dot L)
+  
+  double dot=dot_product(normal, light[LOCATION]);//how calculate light vector
+  
+  d.red=dreflect[RED]*light[COLOR][RED]*(dot);
+  d.green=dreflect[GREEN]*light[COLOR][GREEN]*(dot);
+  d.blue=dreflect[BLUE]*light[COLOR][BLUE]*(dot);
+  
+  limit_color(&d);
   return d;
 }
 
+//P*Ks*[2*(N dot L)*N-L)dotV]^x
 color calculate_specular(double light[2][3], double *sreflect, double *view, double *normal ) {
-
   color s;
+
+  double vals[3];
+  vals[RED]=2*dot_product(normal,light[LOCATION])*normal[RED]-light[LOCATION][RED];
+  vals[GREEN]=2*dot_product(normal,light[LOCATION])*normal[GREEN]-light[LOCATION][GREEN];
+  vals[BLUE]=2*dot_product(normal,light[LOCATION])*normal[BLUE]-light[LOCATION][BLUE];
+
+  normalize(vals);
+
+  double dot=pow(dot_product(vals,view),16);
+  //vals[GREEN]=pow(dot_product(vals[GREEN],view),16);
+  //vals[BLUE]=pow(dot_product(vals[BLUE],view),16);
+
+  s.red=light[COLOR][RED]*sreflect[RED]*dot;
+  s.green=light[COLOR][GREEN]*sreflect[GREEN]*dot;
+  s.blue=light[COLOR][BLUE]*sreflect[BLUE]*dot;
+
+  limit_color(&s);
+  
   return s;
 }
 
@@ -55,7 +93,7 @@ void limit_color( color * c ) {
 //normalize vetor, should modify the parameter
 void normalize( double *vector ) {
   //divide all components by magnitude
-  double magnitude=vector[0]+vector[1]+vector[2];
+  double magnitude=sqrt(vector[0]*vector[0]+vector[1]*vector[1]+vector[2]*vector[2]);
   vector[0]=vector[0]/magnitude;
   vector[1]=vector[1]/magnitude;
   vector[2]=vector[2]/magnitude;
