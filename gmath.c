@@ -52,12 +52,21 @@ color calculate_diffuse(double light[2][3], double *dreflect, double *normal ) {
 color calculate_specular(double light[2][3], double *sreflect, double *view, double *normal ) {
   color s;
 
+  s.red=0;
+  s.green=0;
+  s.blue=0;
+
+  if (dot_product(normal, light[LOCATION])<=0)
+    return s;
+
   double vals[3];
   vals[RED]=2*dot_product(normal,light[LOCATION])*normal[RED]-light[LOCATION][RED];
   vals[GREEN]=2*dot_product(normal,light[LOCATION])*normal[GREEN]-light[LOCATION][GREEN];
   vals[BLUE]=2*dot_product(normal,light[LOCATION])*normal[BLUE]-light[LOCATION][BLUE];
 
   normalize(vals);
+
+
 
   double dot=pow(dot_product(vals,view),16);
   //vals[GREEN]=pow(dot_product(vals[GREEN],view),16);
