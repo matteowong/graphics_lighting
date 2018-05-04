@@ -64,11 +64,11 @@ color calculate_specular(double light[2][3], double *sreflect, double *view, dou
   vals[GREEN]=2*dot_product(normal,light[LOCATION])*normal[GREEN]-light[LOCATION][GREEN];
   vals[BLUE]=2*dot_product(normal,light[LOCATION])*normal[BLUE]-light[LOCATION][BLUE];
 
-  normalize(vals);
+  //normalize(vals);
 
 
 
-  double dot=pow(dot_product(vals,view),16);
+  double dot=pow(dot_product(vals,view),15);
   //vals[GREEN]=pow(dot_product(vals[GREEN],view),16);
   //vals[BLUE]=pow(dot_product(vals[BLUE],view),16);
 
